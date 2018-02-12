@@ -12,7 +12,7 @@ To-do:
       -Implement a more efficient means of comparing particle positions  
       -Set max velocities
 Bugs:
-      -theta and phi runaway 
+      -theta and phi runaway  //** yes; these need be checked and normalized after each move.
 */
 /* ************************* */
 
@@ -42,6 +42,26 @@ Bugs:
 
 //Center of Mass frame
 float vel_CM(float mass_a, float mass_b, float vel_a, float vel_b)
+      
+//** Subroutines need better documentation. Usually I'd do something like this:
+//Function vel_CM  
+//
+//**note this is properly a function as opposed to a procedure since it returns a single value
+//that is not a pointer to a sructure or anything like that. It may be a matter of semantics, but I find it is better to 
+//make this distinction to make the code easire to maintain and understand.
+//
+//purpose: find collision reference frame of two particles
+//
+//inputs:
+//mass_a: mass of first particle in grams
+//mass_b: mass of second particle in grams
+//vel_a: velocity of first particle in cm/sec
+//vel_b: velocity of second particle in cm/sev
+//
+//returns:
+//vel_CM: the velocity of the center of mass of the collision reference frame in cm/sec
+//
+      
 {
   float vel_CM = (mass_a*vel_a + mass_b*vel_b)/(mass_a + mass_b);
   return vel_CM;
@@ -49,12 +69,23 @@ float vel_CM(float mass_a, float mass_b, float vel_a, float vel_b)
 
 //Kinetic Energy
 float kinetic_energy(float mass_1, float mass_2, float vel_a_cm, float vel_b_cm)
+//** as above, more complete documentation is needsd.
 {
   float KE = 0.5*mass_1*vel_a_cm*vel_a_cm + 0.5*mass_2*vel_b_cm*vel_b_cm;
   return KE;
 }
+
 /* ************************* */
-//Elastic Collsion Tools
+//Elastic Collision Tools
+
+//** these are a good example of why it is better to have data structures and nested subroutine architecture. It
+//makes more sense for there to be a single subroutine "collision:" that takes two particle structures as inputs,
+//specifically teo pointers to partical structures, and modifies them according to the collision dynamics,
+//then returns either nothing (i.e. void) or some integer indicating success or failure.
+//as it is too much stuff is getting passed, which makes the code hard to folow and also more prome to errors,
+//since a bunch more stuff needs be typed, which, for a bad typist like myself, means there'll be a lot of errors
+//to clean up.
+
 //Final Velocity of Particle A
 float elastic_collsion_vel_1(float mass_1, float mass_2, float vel_a, float vel_cm, float KE)
 {
@@ -74,7 +105,7 @@ float elastic_collsion_vel_2(float mass_1, float mass_2, float vel_a, float vel_
 }
 /* ************************* */
 //Gradient Finder Tools
-//Derivative: dv/vx = (1/v)*dv/dt
+//Derivative: dv/vx = (1/v)*dv/dt 
 float derivative(float t_0, float t_1, float t_2, float vel_0, float vel_1, float vel_2)
 {
   float del_v_1 = vel_1 - vel_0;
@@ -86,6 +117,8 @@ float derivative(float t_0, float t_1, float t_2, float vel_0, float vel_1, floa
   float temp_2 = del_v_2/del_t_2;
   
   float derivative = 0.5*(temp_1 + temp_2);
+      //** the following is a clumsy construction as written. if it is short and clear enough to be a single line, just use the 
+      //'?" operator. Otherwise, put this on separate lines as a typical if/then/else construct.
   if( vel_1 == 0.0000 ){ derivative = derivative/0.0000001; } else { derivative = derivative/vel_1; }
   return derivative; 
 }
